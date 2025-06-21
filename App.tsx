@@ -4,24 +4,48 @@ import {
   ViroText,
   ViroTrackingReason,
   ViroTrackingStateConstants,
+  ViroMaterials
 } from "@reactvision/react-viro";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TouchableOpacity, Text,View,Button,StyleSheet } from "react-native";
 
+ViroMaterials.createMaterials({
+  planeMaterial: {
+    diffuseColor: 'rgba(0,0,255,0.5)', // Semi-transparent blue for detected planes
+  },
+  selectedPlaneMaterial: {
+    diffuseColor: 'rgba(0,255,0,0.7)', // Semi-transparent green for selected plane
+  },
+  placedObjectMaterial: {
+    diffuseColor: '#FF0000', // Red for the placed object
+  },
+});
+
+const TextContext = React.createContext("");
+
 const HelloWorldSceneAR = () => {
-
   const [text, setText] = useState("Initializing AR...");
+  const message = React.useContext(TextContext);
 
-  function onInitialized(state: any, reason: ViroTrackingReason) {
+  const [planes, detectedplaneadder]=useState({});//identifies different planes
+  const [selectedplaneid, setplane]=useState(null);//for selecting plane
+  const [objectposition, setdobjectposition]=useState(null); //for setting obect position
+
+  //--------------------------------------DURING initialisation--------------------------------------------------------
+  function onInitialized(state: any, reason: ViroTrackingReason) 
+  {
     console.log("onInitialized", state, reason);
     if (state === ViroTrackingStateConstants.TRACKING_NORMAL) {
-      setText("Hello World!");
+      //setText(props.message);
     } else if (state === ViroTrackingStateConstants.TRACKING_UNAVAILABLE) {
-      setText("Nigga?");
+      //setText("Tracking lost");
     }
   }
+  //--------------------------------------AFTER initialisation--------------------------------------------------------
+  useEffect(() => {setText(message);}, [message]);
 
   return (
+    
     <ViroARScene onTrackingUpdated={onInitialized}>
       <ViroText
         text={text}
@@ -32,10 +56,11 @@ const HelloWorldSceneAR = () => {
     </ViroARScene>
   );
 };
-
+  //----------------------------------------------------------------------------------------------
 export default () => {
-  const [textbox,settextbox]=useState('Placefolder');
+  const [textbox,settextbox]=useState('Placeholder');
   return (
+    <TextContext.Provider value={textbox}>
     <View style={styles.container}>
 
     <ViroARSceneNavigator
@@ -48,10 +73,11 @@ export default () => {
     <View style={styles.overlay}>
       <Text style={{bottom:50}}>{textbox}</Text>
           <TouchableOpacity style={styles.button} onPress={() => settextbox("Button Was Clicked!")}>
-      <Text style={styles.buttonText}>{'RESET'}</Text>
+      <Text style={styles.buttonText}>{'Start'}</Text>
     </TouchableOpacity>
       </View>
     </View>
+    </TextContext.Provider>
   );
 };
 
